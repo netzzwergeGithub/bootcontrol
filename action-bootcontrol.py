@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from debug_lib.help_lib import  print_intentMessage
+from debug_lib.help_lib import  save_intentMessage
 import configparser
 from hermes_python.hermes import Hermes
 from hermes_python.ffi.utils import MqttOptions
 from hermes_python.ontology import *
 import io
+import os
 
 CONFIGURATION_ENCODING_FORMAT = "utf-8"
 CONFIG_INI = "config.ini"
@@ -32,14 +35,14 @@ def subscribe_intent_callback(hermes, intentMessage):
 
 
 def action_wrapper(hermes, intentMessage, conf):
-        session_id = intentMessage.session_id
+    session_id = intentMessage.session_id
     print("action_wrapper")
-    print_intentMessage(intentMessage)
+    #print_intentMessage(intentMessage)
     tempDir = "tmp"
     if not os.path.isdir(tempDir):
         os.mkdir(tempDir)
     save_intentMessage(intentMessage, "{}/{}_messageInfo.txt".format(tempDir,session_id))
-    sentence =  intentMessage.input
+    sentence =  intentMessage.slots.registeredCommand.first().value
     hermes.publish_end_session(intentMessage.session_id, sentence)
 
 

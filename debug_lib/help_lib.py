@@ -8,9 +8,11 @@ def getFormattedIntentMessage(intent_message):
   message +=  "\n" + "input: {}".format(intent_message.input)
   message +=  "\n" + 'Intent.name: {}'.format(intent_message.intent.intent_name)
   message +=  "\n" + 'Intent.confidence: {}'.format(intent_message.intent.confidence_score)
+  message += "\n"  +  'SystemCommand: {}'.format(intent_message.slots.registeredCommand.first().value)
 
   if  intent_message.slots:
-    for (slot_value, slot) in intent_message.slots.items():
+    message += "\n" + "Number of slots: {}".format(dir(intent_message.slots))
+    for (slot_value, slot) in intent_message.slots.items:
           message +=  "\n" + 'Slot {} -> \n\tRaw: {} \tValue: {}'.format(slot_value, slot[0].raw_value, slot[0].slot_value.value.value)
   message +=  "\n" +  "\n\n"
   return message
