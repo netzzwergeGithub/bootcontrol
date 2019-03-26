@@ -11,13 +11,14 @@ import io
 import os
 import sys
 import datetime
+from  timeconvert import  getMinutesToShutdown
 
 CONFIGURATION_ENCODING_FORMAT = "utf-8"
 CONFIG_INI = "config.ini"
 
 BOOTCONTROL_INTENT = "mardeh:SystemCommand"
-
-SUDO_STRING = "sudo shutdown {} {}"
+CONFIRM_INTENT = "mardeh:confirm"
+SUDO_STRING = "sudo shutdown {} +{}"
 
 command_to_execute = None
 
@@ -36,7 +37,16 @@ def read_configuration_file(configuration_file):
     except (IOError, configparser.Error) as e:
         return dict()
 
-def subscribe_intent_callback(hermes, intentMessage):
+def subscribe_confirm_intent_callback(hermes, intentMessage):
+    confirm =  intentMessage.slots.confirm.first().value
+    if confirm == "yes":
+        pass
+    else:
+        pass
+
+    hermes.publish_end_session(intentMessage.session_id, "You said '{}".format(confirm))
+
+def subscribe_bootcontrol_intent_callback(hermes, intentMessage):
     conf = read_configuration_file(CONFIG_INI)
     action_wrapper(hermes, intentMessage, conf)
 
@@ -52,13 +62,11 @@ def action_wrapper(hermes, intentMessage, conf):
     save_intentMessage(intentMessage, "{}/{}_messageInfo.txt".format(tempDir,session_id))
     command =  intentMessage.slots.registeredCommand.first().value
     if intentMessage.slots.timeToExcecute:
-        now = datetime.datetime.now()
         timeToExecute =intentMessage.slots.timeToExcecute.first().value
-        timeToExecuteAsDateTime =datetime.datetime.fromisoformat( intentMessage.slots.timeToExcecute.first().value)
-        timeDelta = timeToExecuteAsDateTime - now 
-        print (timeDelta / datetime.timedelta(minutes=1))
+        minutesToGo = getMinutesToShutdown(timeToExecute)
+        print (minutesToGo)
     else:
-        timeToExecute = "now"
+        minutesToGo = 0
 
     if command == "reboot":
         shortCommand = "-r"
@@ -67,10 +75,10 @@ def action_wrapper(hermes, intentMessage, conf):
     if command == "shutdown":
         shortCommand = "-P"
 
-    sentence =  "{} at {} ".format(command, timeToExecute)
-    hermes.publish_end_session(intentMessage.session_id, sentence)
+    sentence =  "The system will {} in {} minutes. Confirm with 'yes', abort with 'no'? ".format(command, minutesToGo)
+    hermes.publish_continue_session(intentMessage.session_id, sentence, [CONFIRM_INTENT])
 
-    command_to_execute = SUDO_STRING.format(shortCommand, timeToExecute)
+    command_to_execute = SUDO_STRING.format(shortCommand, minutesToGo)
     #os.system(SUDO_STRING.format(shortCommand, timeToExecute))
 
 
@@ -78,5 +86,6 @@ if __name__ == "__main__":
     print(sys.version_info)
     mqtt_opts = MqttOptions()
     with Hermes(mqtt_options=mqtt_opts) as h:
-        h.subscribe_intent(BOOTCONTROL_INTENT, subscribe_intent_callback) \
+        h.subscribe_intent(BOOTCONTROL_INTENT, subscribe_bootcontrol_intent_callback) \
+         .subscribe_intent(CONFIRM_INTENT, subscribe_confirm_intent_callback) \
          .start()
