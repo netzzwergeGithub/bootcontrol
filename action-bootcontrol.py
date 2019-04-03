@@ -54,7 +54,7 @@ def subscribe_session_ended(hermes, intentMessage):
     ApplicationState.resetCommandState()
 
 def subscribe_password_intent_callback(hermes, intentMessage):
-    hermes.publish_continue_session(intentMessage.session_id, intentMessage.slots.password.first().value, follow_up_intents)
+    hermes.publish_end_session(intentMessage.session_id, intentMessage.slots.password.first().value, follow_up_intents)
 
 def subscribe_replay_intent_callback(hermes, intentMessage):
     hermes.publish_continue_session(intentMessage.session_id, ApplicationState.getlastSpokenText(), follow_up_intents)
