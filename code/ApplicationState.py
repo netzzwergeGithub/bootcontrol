@@ -6,6 +6,7 @@ class ApplicationState:
     last_spoken_text = None   # last text send to user. Used on replay-Intent
 
 
+    @classmethod
     def  resetCommandState(cls):
         cls.command_to_execute = None # command line to be executed after confirming
         cls.requested_command = None # command extracted fom SystemCommand intent
@@ -25,8 +26,8 @@ class ApplicationState:
         cls.requested_command = command
 
     @classmethod
-    def setRequestedTimeOfExecution(cls, timeToExcecute):
-        cls.requested_time_of_execution = timeToExecute
+    def setRequestedTimeOfExecution(cls, executionTime):
+        cls.requested_time_of_execution = executionTime
 
     @classmethod
     def getlastSpokenText(cls):
