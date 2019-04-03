@@ -22,7 +22,8 @@ BOOTCONTROL_INTENT = "mardeh:SystemCommand"
 CONFIRM_INTENT = "mardeh:confirm"
 REPLAY_INTENT = "mardeh:replay"
 CANCEL_INTENT = "mardeh:cancel"
-follow_up_intents = [CONFIRM_INTENT,REPLAY_INTENT,CANCEL_INTENT]
+PASSWORD_INTENT = "mardeh:password"
+follow_up_intents = [CONFIRM_INTENT,REPLAY_INTENT,CANCEL_INTENT, PASSWORD_INTENT]
 # String-Template for command to execute
 SUDO_STRING = "sudo shutdown {} +{}"
 
@@ -51,6 +52,9 @@ def subscribe_session_ended(hermes, intentMessage):
         print(command)
         os.system(command)
     ApplicationState.resetCommandState()
+
+def subscribe_password_intent_callback(hermes, intentMessage):
+    hermes.publish_continue_session(intentMessage.session_id, intentMessage.slots.password.first().value, follow_up_intents)
 
 def subscribe_replay_intent_callback(hermes, intentMessage):
     hermes.publish_continue_session(intentMessage.session_id, ApplicationState.getlastSpokenText(), follow_up_intents)
@@ -94,7 +98,7 @@ def action_wrapper(hermes, intentMessage, conf):
 
     ApplicationState.setCommandToExecute(SUDO_STRING.format(shortCommand, ApplicationState.getRequestedTimeOfExecution()))
 
-    ApplicationState.setlastSpokenText(sentence) 
+    ApplicationState.setlastSpokenText(sentence)
 
 
 if __name__ == "__main__":
@@ -104,6 +108,7 @@ if __name__ == "__main__":
          .subscribe_intent(CONFIRM_INTENT, subscribe_confirm_intent_callback) \
          .subscribe_intent(REPLAY_INTENT, subscribe_replay_intent_callback) \
          .subscribe_intent(CANCEL_INTENT, subscribe_cancel_intent_callback) \
+         .subscribe_intent(PASSWORD_INTENT, subscribe_password_intent_callback) \
          .subscribe_session_started( subscribe_session_started) \
          .subscribe_session_ended( subscribe_session_ended) \
          .start()
