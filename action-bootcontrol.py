@@ -25,7 +25,9 @@ CANCEL_INTENT = "mardeh:cancel"
 PASSWORD_INTENT = "mardeh:password"
 follow_up_intents = [CONFIRM_INTENT,REPLAY_INTENT,CANCEL_INTENT, PASSWORD_INTENT]
 # String-Template for command to execute
-SUDO_STRING = "sudo shutdown {} +{}"
+SHUTDOWN_STRING = "sudo shutdown {} +{}"
+SHUTDOWN_STRING_CANCEL = "sudo shutdown {} "
+TO_CONFIRM_TEXT = "Confirm with 'yes', abort with 'no', repeat question with 'repeat'."
 
 class SnipsConfigParser(configparser.SafeConfigParser):
     def to_dict(self):
@@ -47,14 +49,17 @@ def subscribe_session_started(hermes, intentMessage):
 
 def subscribe_session_ended(hermes, intentMessage):
     print("Session Ended\n")
-    command = ApplicationState.getCommandToExecute()
-    if command != None:
-        print(command)
-        os.system(command)
+    confirmed = ApplicationState.getCommandConfirmed()
+    if confirmed:
+        command = ApplicationState.getCommandToExecute()
+        if command != None:
+            print(command)
+            os.system(command)
     ApplicationState.resetCommandState()
 
-def subscribe_password_intent_callback(hermes, intentMessage):
-    hermes.publish_end_session(intentMessage.session_id, intentMessage.slots.password.first().value, follow_up_intents)
+# def subscribe_password_intent_callback(hermes, intentMessage):
+#     hermes.publish_end_session(intentMessage.session_id, "{}".format(intentMessage.slots.password.first().value))
+    #hermes.publish_continue_session(intentMessage.session_id, intentMessage.slots.password.first().value, follow_up_intents)
 
 def subscribe_replay_intent_callback(hermes, intentMessage):
     hermes.publish_continue_session(intentMessage.session_id, ApplicationState.getlastSpokenText(), follow_up_intents)
@@ -64,9 +69,13 @@ def subscribe_cancel_intent_callback(hermes, intentMessage):
     ApplicationState.resetCommandState()
 
 def subscribe_confirm_intent_callback(hermes, intentMessage):
-    confirm =  intentMessage.slots.confirm.first().value
+    ApplicationState.confirmCommand()
 
-    hermes.publish_end_session(intentMessage.session_id, "System will {} in {} minutes".format(ApplicationState.getRequestedCommand(),ApplicationState.getRequestedTimeOfExecution()))
+    if ApplicationState.getRequestedCommand() == "stop shutdown":
+        sentence =  "Ok, system will stop the shutdown"
+    else:
+        sentence = "Ok, system will {} {}.".format(ApplicationState.getRequestedCommand(),ApplicationState.getWaitingTimeText())
+    hermes.publish_end_session(intentMessage.session_id,  sentence)
 
 def subscribe_bootcontrol_intent_callback(hermes, intentMessage):
     conf = read_configuration_file(CONFIG_INI)
@@ -89,14 +98,21 @@ def action_wrapper(hermes, intentMessage, conf):
         shortCommand = "-H"
     elif ApplicationState.getRequestedCommand() == "shutdown":
         shortCommand = "-P"
+    elif ApplicationState.getRequestedCommand() == "stop shutdown":
+        shortCommand = "-c"
     else:
         hermes.publish_end_session(intentMessage.session_id, "Wrong command {}".format(ApplicationState.getRequestedCommand() ))
 
+    if ApplicationState.getRequestedCommand() == "stop shutdown":
+        sentence =  "The system shutdown will be canceld. {}".format(TO_CONFIRM_TEXT)
+        ApplicationState.setCommandToExecute(SHUTDOWN_STRING_CANCEL.format(shortCommand))
 
-    sentence =  "The system will {} in {} minutes. Confirm with 'yes', abort with 'no', replay with 'repeat' ".format(ApplicationState.getRequestedCommand(), ApplicationState.getRequestedTimeOfExecution())
+    else:
+        sentence =  "The system will {} {}. {}".format(ApplicationState.getRequestedCommand(), ApplicationState.getWaitingTimeText(),TO_CONFIRM_TEXT)
+        ApplicationState.setCommandToExecute(SHUTDOWN_STRING.format(shortCommand, ApplicationState.getRequestedTimeOfExecution()))
+
     hermes.publish_continue_session(intentMessage.session_id, sentence, follow_up_intents)
 
-    ApplicationState.setCommandToExecute(SUDO_STRING.format(shortCommand, ApplicationState.getRequestedTimeOfExecution()))
 
     ApplicationState.setlastSpokenText(sentence)
 
@@ -108,7 +124,7 @@ if __name__ == "__main__":
          .subscribe_intent(CONFIRM_INTENT, subscribe_confirm_intent_callback) \
          .subscribe_intent(REPLAY_INTENT, subscribe_replay_intent_callback) \
          .subscribe_intent(CANCEL_INTENT, subscribe_cancel_intent_callback) \
-         .subscribe_intent(PASSWORD_INTENT, subscribe_password_intent_callback) \
          .subscribe_session_started( subscribe_session_started) \
          .subscribe_session_ended( subscribe_session_ended) \
          .start()
+#          .subscribe_intent(PASSWORD_INTENT, subscribe_password_intent_callback) \
