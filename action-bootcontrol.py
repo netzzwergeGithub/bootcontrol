@@ -57,10 +57,6 @@ def subscribe_session_ended(hermes, intentMessage):
             os.system(command)
     ApplicationState.resetCommandState()
 
-# def subscribe_password_intent_callback(hermes, intentMessage):
-#     hermes.publish_end_session(intentMessage.session_id, "{}".format(intentMessage.slots.password.first().value))
-    #hermes.publish_continue_session(intentMessage.session_id, intentMessage.slots.password.first().value, follow_up_intents)
-
 def subscribe_replay_intent_callback(hermes, intentMessage):
     hermes.publish_continue_session(intentMessage.session_id, ApplicationState.getlastSpokenText(), follow_up_intents)
 
@@ -88,7 +84,6 @@ def action_wrapper(hermes, intentMessage, conf):
     if intentMessage.slots.timeToExcecute:
         timeToExecute =intentMessage.slots.timeToExcecute.first().value
         ApplicationState.setRequestedTimeOfExecution(getMinutesToShutdown(timeToExecute))
-        #print (ApplicationState.getRequestedTimeOfExecution())
     else:
         ApplicationState.setRequestedTimeOfExecution(0)
 
@@ -127,4 +122,3 @@ if __name__ == "__main__":
          .subscribe_session_started( subscribe_session_started) \
          .subscribe_session_ended( subscribe_session_ended) \
          .start()
-#          .subscribe_intent(PASSWORD_INTENT, subscribe_password_intent_callback) \
