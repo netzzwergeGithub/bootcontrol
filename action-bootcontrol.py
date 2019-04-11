@@ -12,6 +12,8 @@ import datetime
 import time
 
 from code.ApplicationState import ApplicationState
+from code.GPIOInputThread import GPIOInputThread
+from code.BootControlHelp import BootControlHelp
 
 from  timeconvert import  getMinutesToShutdown
 
@@ -19,15 +21,20 @@ CONFIGURATION_ENCODING_FORMAT = "utf-8"
 CONFIG_INI = "config.ini"
 
 BOOTCONTROL_INTENT = "mardeh:SystemCommand"
+BOOTCONTROL_HELP_INTENT = "mardeh:help"
 CONFIRM_INTENT = "mardeh:confirm"
 REPLAY_INTENT = "mardeh:replay"
 CANCEL_INTENT = "mardeh:cancel"
 PASSWORD_INTENT = "mardeh:password"
-follow_up_intents = [CONFIRM_INTENT,REPLAY_INTENT,CANCEL_INTENT, PASSWORD_INTENT]
+follow_up_intents = [CONFIRM_INTENT,REPLAY_INTENT,CANCEL_INTENT, PASSWORD_INTENT, BOOTCONTROL_HELP_INTENT ]
 # String-Template for command to execute
 SHUTDOWN_STRING = "sudo shutdown {} +{}"
 SHUTDOWN_STRING_CANCEL = "sudo shutdown {} "
 TO_CONFIRM_TEXT = "Confirm with 'yes', abort with 'no', repeat question with 'repeat'."
+
+
+RESPEAKER_BUTTON = 17
+hermes_object = None
 
 class SnipsConfigParser(configparser.SafeConfigParser):
     def to_dict(self):
@@ -43,11 +50,12 @@ def read_configuration_file(configuration_file):
     except (IOError, configparser.Error) as e:
         return dict()
 
-def subscribe_session_started(hermes, intentMessage):
+def session_started(hermes, intentMessage):
     print("Session started\n")
     ApplicationState.resetCommandState()
+    print("Hermes object {} \n".format(hermes_object))
 
-def subscribe_session_ended(hermes, intentMessage):
+def session_ended(hermes, intentMessage):
     print("Session Ended\n")
     confirmed = ApplicationState.getCommandConfirmed()
     if confirmed:
@@ -57,14 +65,18 @@ def subscribe_session_ended(hermes, intentMessage):
             os.system(command)
     ApplicationState.resetCommandState()
 
-def subscribe_replay_intent_callback(hermes, intentMessage):
+def replay_intent_callback(hermes, intentMessage):
     hermes.publish_continue_session(intentMessage.session_id, ApplicationState.getlastSpokenText(), follow_up_intents)
 
-def subscribe_cancel_intent_callback(hermes, intentMessage):
+def help_intent_callback(hermes, intentMessage):
+    ApplicationState.resetCommandState()
+    hermes.publish_end_session(intentMessage.session_id, BootControlHelp.getText())
+
+def cancel_intent_callback(hermes, intentMessage):
     hermes.publish_end_session(intentMessage.session_id, "{} canceld".format(ApplicationState.getRequestedCommand() ))
     ApplicationState.resetCommandState()
 
-def subscribe_confirm_intent_callback(hermes, intentMessage):
+def confirm_intent_callback(hermes, intentMessage):
     ApplicationState.confirmCommand()
 
     if ApplicationState.getRequestedCommand() == "stop shutdown":
@@ -73,7 +85,7 @@ def subscribe_confirm_intent_callback(hermes, intentMessage):
         sentence = "Ok, system will {} {}.".format(ApplicationState.getRequestedCommand(),ApplicationState.getWaitingTimeText())
     hermes.publish_end_session(intentMessage.session_id,  sentence)
 
-def subscribe_bootcontrol_intent_callback(hermes, intentMessage):
+def bootcontrol_intent_callback(hermes, intentMessage):
     conf = read_configuration_file(CONFIG_INI)
     action_wrapper(hermes, intentMessage, conf)
 
@@ -112,13 +124,35 @@ def action_wrapper(hermes, intentMessage, conf):
     ApplicationState.setlastSpokenText(sentence)
 
 
+def onPinState( state):
+    print("pin stat is: {}".format(state))
+    if not state: # Button on respeaker gives 0 on beeing pressed
+        with Hermes(mqtt_options=mqtt_opts) as h:
+            h.publish_start_session_action(None,
+                "Boot contol activated. You say 'shutdown', 'reboot' or 'halt'. Or you can get help, saying 'help'",
+                [BOOTCONTROL_INTENT, BOOTCONTROL_HELP_INTENT ],
+                True, False, None)
+
 if __name__ == "__main__":
+
+    print("NOT SLEEPED \n")
+    GPIOInputThread(RESPEAKER_BUTTON, onPinState, check_interval=3 ) 
     mqtt_opts = MqttOptions()
     with Hermes(mqtt_options=mqtt_opts) as h:
-        h.subscribe_intent(BOOTCONTROL_INTENT, subscribe_bootcontrol_intent_callback) \
-         .subscribe_intent(CONFIRM_INTENT, subscribe_confirm_intent_callback) \
-         .subscribe_intent(REPLAY_INTENT, subscribe_replay_intent_callback) \
-         .subscribe_intent(CANCEL_INTENT, subscribe_cancel_intent_callback) \
-         .subscribe_session_started( subscribe_session_started) \
-         .subscribe_session_ended( subscribe_session_ended) \
+        h.subscribe_intent(BOOTCONTROL_INTENT, bootcontrol_intent_callback) \
+         .subscribe_intent(BOOTCONTROL_HELP_INTENT, help_intent_callback) \
+         .subscribe_intent(CONFIRM_INTENT, confirm_intent_callback) \
+         .subscribe_intent(REPLAY_INTENT, replay_intent_callback) \
+         .subscribe_intent(CANCEL_INTENT, cancel_intent_callback) \
+         .subscribe_session_started( session_started) \
+         .subscribe_session_ended( session_ended) \
          .start()
+        hermes_object = h 
+
+    hermes_object.publish_start_session_notification("default", None, None)
+'''
+         .publish_start_session_action(None,
+                "What band would you like to see live ?",
+                [BOOTCONTROL_INTENT],
+                True, False, None)\
+'''
