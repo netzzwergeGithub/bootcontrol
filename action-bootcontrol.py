@@ -70,7 +70,7 @@ def replay_intent_callback(hermes, intentMessage):
 
 def help_intent_callback(hermes, intentMessage):
     ApplicationState.resetCommandState()
-    hermes.publish_end_session(intentMessage.session_id, BootControlHelp.getText())
+    hermes.publish_continue_session(intentMessage.session_id, BootControlHelp.getText(),  [BOOTCONTROL_INTENT, BOOTCONTROL_HELP_INTENT ])
 
 def cancel_intent_callback(hermes, intentMessage):
     hermes.publish_end_session(intentMessage.session_id, "{} canceld".format(ApplicationState.getRequestedCommand() ))
