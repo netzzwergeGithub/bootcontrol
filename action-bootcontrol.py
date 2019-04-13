@@ -85,7 +85,8 @@ def confirm_intent_callback(hermes, intentMessage):
 def bootcontrol_intent_callback(hermes, intentMessage):
     """
     react on the different commands of the bootcontrol intentMessage
-    """ session_id = intentMessage.session_id
+    """ 
+    session_id = intentMessage.session_id
     ApplicationState.setRequestedCommand(intentMessage.slots.registeredCommand.first().value)
     # get the minutes to wait before shutdown etc.
     if intentMessage.slots.timeToExcecute:
@@ -134,7 +135,7 @@ def onPinState( state):
     if not state: # Button on respeaker gives 0 on beeing pressed
         with Hermes(mqtt_options=mqtt_opts) as h:
             h.publish_start_session_action(None,
-                "Boot contol activated. You say 'shutdown', 'reboot' or 'halt'. Or you can get help, saying 'help'",
+                "Boot control activated. You say 'shutdown', 'reboot' or 'halt'. Or you can get help, saying 'help'",
                 [BOOTCONTROL_INTENT, BOOTCONTROL_HELP_INTENT ],
                 True, False, None)
 

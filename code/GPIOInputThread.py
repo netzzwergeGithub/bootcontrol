@@ -11,6 +11,8 @@ GPIO.setmode(GPIO.BCM)
 
 class GPIOInputThread(object):
     """ The  class which call a callback function regularily on an interval passing the input value on the defined pin.
+    class construction thanks to:
+    https://gist.github.com/sebdah/832219525541e059aefa
     """
 
     def __init__(self, bcm_pin_nr, call_back, check_interval=1 ):
