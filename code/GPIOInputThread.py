@@ -10,9 +10,7 @@ GPIO.setmode(GPIO.BCM)
 
 
 class GPIOInputThread(object):
-    """ Threading  class which call a callback function regularily on an interval passing the input value on the defined pin. 
-        The run() method will be started and it will run in the background
-        until the application exits.
+    """ The  class which call a callback function regularily on an interval passing the input value on the defined pin.
     """
 
     def __init__(self, bcm_pin_nr, call_back, check_interval=1 ):
@@ -35,10 +33,8 @@ class GPIOInputThread(object):
         """ Method that runs forever """
         while True:
             state = GPIO.input(self.bcm_pin_nr)
-            # Do something
             # print('checking input on PIN: {}: {} => callback: {} '.format(self.bcm_pin_nr, state , self.call_back))
             if self.call_back:
                 self.call_back(state)
 
             time.sleep(self.check_interval)
-
