@@ -131,15 +131,16 @@ def bootcontrol_intent_callback(hermes, intentMessage):
     ApplicationState.setlastSpokenText(sentence)
 
 
-def onPin17High( ):
+def onPinHigh(channel ):
     '''
       callback function called on rising edge
     '''
-    with Hermes(mqtt_options=mqtt_opts) as h:
-        h.publish_start_session_action(None,
-            "Boot control activated. You say 'shutdown', 'reboot' or 'halt'. Or you can get help, saying 'help'",
-            [BOOTCONTROL_INTENT, BOOTCONTROL_HELP_INTENT ],
-            True, False, None)
+    if channel == RESPEAKER_BUTTON:
+        with Hermes(mqtt_options=mqtt_opts) as h:
+            h.publish_start_session_action(None,
+                "Boot control activated. You say 'shutdown', 'reboot' or 'halt'. Or you can get help, saying 'help'",
+                [BOOTCONTROL_INTENT, BOOTCONTROL_HELP_INTENT ],
+                True, False, None)
 
 if __name__ == "__main__":
     try:
@@ -147,7 +148,7 @@ if __name__ == "__main__":
         # GPIOInputThread(RESPEAKER_BUTTON, onPinState, check_interval=1 )
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(RESPEAKER_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-        GPIO.add_event_detect(RESPEAKER_BUTTON, GPIO.RISING, callback = onPin17High, bouncetime = 200)
+        GPIO.add_event_detect(RESPEAKER_BUTTON, GPIO.RISING, callback = onPinHigh, bouncetime = 200)
         # Register on intents and state changes
         mqtt_opts = MqttOptions()
         with Hermes(mqtt_options=mqtt_opts) as h:
