@@ -18,7 +18,6 @@ import time
 
 
 from code.ApplicationState import ApplicationState
-from code.GPIOInputThread import GPIOInputThread
 from code.BootControlHelp import BootControlHelp
 
 from  timeconvert import  getMinutesToShutdown
@@ -144,8 +143,7 @@ def onPinHigh(channel ):
 
 if __name__ == "__main__":
     try:
-        # Start the background thread, which is polling the GPIO-Pin (BCM-Layout)
-        # GPIOInputThread(RESPEAKER_BUTTON, onPinState, check_interval=1 )
+        # register for a pin event
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(RESPEAKER_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
         GPIO.add_event_detect(RESPEAKER_BUTTON, GPIO.RISING, callback = onPinHigh, bouncetime = 200)
