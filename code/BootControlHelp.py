@@ -7,4 +7,5 @@ class BootControlHelp:
                   'shutdown in five minutes'.
                   If a shutdown command is scheduled you can cancel it, saying 'stop shutdown'.
 
+                  Which command shoud I execute?
                 '''
