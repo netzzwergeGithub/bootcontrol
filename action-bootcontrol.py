@@ -159,5 +159,5 @@ if __name__ == "__main__":
              .subscribe_session_started( session_started) \
              .subscribe_session_ended( session_ended) \
              .start()
-     finally:
+    finally:
          GPIO.cleanup()
