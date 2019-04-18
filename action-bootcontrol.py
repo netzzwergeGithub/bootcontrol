@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+try:
+        import RPi.GPIO as GPIO
+except RuntimeError:
+        print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
+
 
 import configparser
 from hermes_python.hermes import Hermes
@@ -41,7 +46,6 @@ def session_started(hermes, intentMessage):
     # print("Session started\n")
     #clear state on session start (for savety sake)
     ApplicationState.resetCommandState()
-    print("Hermes object {} \n".format(hermes_object))
 
 def session_ended(hermes, intentMessage):
     '''
@@ -85,7 +89,7 @@ def confirm_intent_callback(hermes, intentMessage):
 def bootcontrol_intent_callback(hermes, intentMessage):
     """
     react on the different commands of the bootcontrol intentMessage
-    """ 
+    """
     session_id = intentMessage.session_id
     ApplicationState.setRequestedCommand(intentMessage.slots.registeredCommand.first().value)
     # get the minutes to wait before shutdown etc.
@@ -117,7 +121,7 @@ def bootcontrol_intent_callback(hermes, intentMessage):
         ApplicationState.setCommandToExecute(SHUTDOWN_STRING_CANCEL.format(shortCommand))
 
     else:
-        #sentence for shutdiwn resetCommands
+        #sentence for shutdown resetCommands
         sentence =  "The system will {} {}. {}".format(ApplicationState.getRequestedCommand(), ApplicationState.getWaitingTimeText(),TO_CONFIRM_TEXT)
         # Save command to execute after confirmation
         ApplicationState.setCommandToExecute(SHUTDOWN_STRING.format(shortCommand, ApplicationState.getRequestedTimeOfExecution()))
@@ -127,30 +131,33 @@ def bootcontrol_intent_callback(hermes, intentMessage):
     ApplicationState.setlastSpokenText(sentence)
 
 
-def onPinState( state):
+def onPin17High( ):
     '''
-      callback function called on button pressed
+      callback function called on rising edge
     '''
-    print("pin stat is: {}".format(state))
-    if not state: # Button on respeaker gives 0 on beeing pressed
-        with Hermes(mqtt_options=mqtt_opts) as h:
-            h.publish_start_session_action(None,
-                "Boot control activated. You say 'shutdown', 'reboot' or 'halt'. Or you can get help, saying 'help'",
-                [BOOTCONTROL_INTENT, BOOTCONTROL_HELP_INTENT ],
-                True, False, None)
+    with Hermes(mqtt_options=mqtt_opts) as h:
+        h.publish_start_session_action(None,
+            "Boot control activated. You say 'shutdown', 'reboot' or 'halt'. Or you can get help, saying 'help'",
+            [BOOTCONTROL_INTENT, BOOTCONTROL_HELP_INTENT ],
+            True, False, None)
 
 if __name__ == "__main__":
-    # Start the background thread, which is polling the GPIO-Pin (BCM-Layout)
-    GPIOInputThread(RESPEAKER_BUTTON, onPinState, check_interval=3 )
-    # Register on intents and state changes
-    mqtt_opts = MqttOptions()
-    with Hermes(mqtt_options=mqtt_opts) as h:
-        h.subscribe_intent(BOOTCONTROL_INTENT, bootcontrol_intent_callback) \
-         .subscribe_intent(BOOTCONTROL_HELP_INTENT, help_intent_callback) \
-         .subscribe_intent(CONFIRM_INTENT, confirm_intent_callback) \
-         .subscribe_intent(REPLAY_INTENT, replay_intent_callback) \
-         .subscribe_intent(CANCEL_INTENT, cancel_intent_callback) \
-         .subscribe_session_started( session_started) \
-         .subscribe_session_ended( session_ended) \
-         .start()
-        hermes_object = h
+    try:
+        # Start the background thread, which is polling the GPIO-Pin (BCM-Layout)
+        # GPIOInputThread(RESPEAKER_BUTTON, onPinState, check_interval=1 )
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(RESPEAKER_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+        GPIO.add_event_detect(RESPEAKER_BUTTON, GPIO.RISING, callback = onPin17High, bouncetime = 200)
+        # Register on intents and state changes
+        mqtt_opts = MqttOptions()
+        with Hermes(mqtt_options=mqtt_opts) as h:
+            h.subscribe_intent(BOOTCONTROL_INTENT, bootcontrol_intent_callback) \
+             .subscribe_intent(BOOTCONTROL_HELP_INTENT, help_intent_callback) \
+             .subscribe_intent(CONFIRM_INTENT, confirm_intent_callback) \
+             .subscribe_intent(REPLAY_INTENT, replay_intent_callback) \
+             .subscribe_intent(CANCEL_INTENT, cancel_intent_callback) \
+             .subscribe_session_started( session_started) \
+             .subscribe_session_ended( session_ended) \
+             .start()
+     finally:
+         GPIO.cleanup()
