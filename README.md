@@ -17,6 +17,7 @@ Some commands have a optional time-parameter. If you add no time-paramter the co
        reboot
        reboot in ten minutes
 ```
+
 ```
 shutdown  [time to shutdown]
 Shedule a a shutdown of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'. Examples:
