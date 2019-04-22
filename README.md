@@ -12,8 +12,9 @@ Some commands have a optional time-parameter. If you add no time-paramter the co
 
 
 **reboot [time to reboot]**
-__Shedule a a reboot of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'.
-       Examples:__
+
+_Shedule a a reboot of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'.
+       Examples:_
 ```
    reboot
    reboot in ten minutes
