@@ -10,10 +10,12 @@ It's just an example how to initiate an snips dialog via an external event.
 ## Possible commands
 Some commands have a optional time-parameter. If you add no time-parameter the command is executed immediately.
 
+
+**reboot [time to reboot]**
+
+_Shedule a a reboot of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'.
+       Examples:_
 ```
-   reboot [time to reboot]
-       Schedule a a reboot of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'.
-       Examples:
        reboot
        reboot in ten minutes
 ```
