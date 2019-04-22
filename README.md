@@ -8,11 +8,11 @@ It's just an example how to initiate an snips dialog via an external event.
 
 
 ## Possible commands
-Some commands have a optional time-parameter. If you add no time-paramter the command is excuted immediately.
+Some commands have a optional time-parameter. If you add no time-parameter the command is executed immediately.
 
 ```
    reboot [time to reboot]
-       Shedule a a reboot of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'.
+       Schedule a a reboot of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'.
        Examples:
        reboot
        reboot in ten minutes
@@ -20,23 +20,23 @@ Some commands have a optional time-parameter. If you add no time-paramter the co
 
 ```
 shutdown  [time to shutdown]
-Shedule a a shutdown of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'. Examples:
+Schedule a a shutdown of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'. Examples:
 shutdown
 shutdown at ten o clock
 ```
 ```
 halt  [time to shutdown]
-Shedule a a halt of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'. Examples:
+Schedule a a halt of the system. Optionally you can add a time value like 'in five minutes' or 'tommorow at noon'. Examples:
 halt
 halt at tomorrow at 10 am
 ```
 ```
 stop shutdown
-Stop a sheduled reboot, shutdown or halt.
+Stop a scheduled reboot, shutdown or halt.
 ```
 ```
 help
-Get a short help what commands the app understands.
+Get a short help which commands the app understands.
 ```
 
 
