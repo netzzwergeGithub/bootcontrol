@@ -64,11 +64,15 @@ You have to add a line to the file *'/etc/snips.toml'* for the category '[snips-
 session_timeout = 25
 
 ```
+Please restart the snips-service to activate changes:
+```
+sudo systemctl restart  "snips-*"
+```
 
 ### add skills user to sudoers
 
 You have to configure the system to allow the _\_snips_skills_ user to execute the bootcontrol commands.
-First open the sudoers file via the command **visudo** and add the following lines and save and exit the editor:
+First open the sudoers file via the command **sudo visudo** and add the following lines and save and exit the editor:
 ```
  Cmnd_Alias      SHUTDOWN = /sbin/shutdown
  # allow shutdown
