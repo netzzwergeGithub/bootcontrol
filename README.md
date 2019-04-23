@@ -3,13 +3,13 @@
 Skill to shutdown or reboot the underlying raspberry pi system via voice control.
 It's a case study for executing system commands as voice commands.
 
-It uses the raspberry pi with raspian an the seeeds respeaker 2 Mic hat.
+It uses the raspberry pi with raspian an the seeeds ReSpeaker 2 Mic hat.
 It expects having installed a snips system on a raspberry pi (e.g. https://docs.snips.ai/getting-started/quick-start-raspberry-pi) and the ReSpeaker 2-Mics Pi HAT ( http://wiki.seeedstudio.com/ReSpeaker_2_Mics_Pi_HAT/#getting-started)
 
-The dialog can be started using the push-button on respeaker 2 Mic hat.
+The dialog can be started using the push-button on ReSpeaker 2 Mic hat.
 It's an example how to initiate an snips dialog via an external event.
 
-**Caution:** The project manipulates the underlying raspberry pi system. You should have experience in using the unix commandline unsing ssh.
+**Caution:** The project manipulates the underlying raspberry pi system. You should have experience in using the unix commandbline using ssh.
 
 
 ## Possible commands
@@ -82,7 +82,7 @@ _snips-skills  ALL=(ALL) NOPASSWD: SHUTDOWN
 
 ### Test your assistant
 
-After doing that you should test the system by activating the dialog saying your hotword (e.g. hey snips) to see if you can reboot you system via speech command, saying:
+After doing that you should test the system by activating the dialog saying your hotword (e.g. hey snips) to see if you can reboot your system via speech command, saying:
 ```
 hey snips
 reboot
@@ -95,7 +95,7 @@ You may consult the log if there are any errors:
 
 ### add user '_snips_skills to group 'gpio'
 
-To use any gipo ports, so the button on the ReSpeaker head, you habe to add the skill-user to group 'gpio'
+To use any gipo ports, so the button on the ReSpeaker head, you have to add the skill-user to group 'gpio'
 ```
 sudo usermod -a -G gpio _snips-skills
 ```
@@ -103,9 +103,17 @@ sudo usermod -a -G gpio _snips-skills
 
 ### deactivate hotword detection
 
-To limit the activation of the installed assistant to the pushing of the button you have to stop and disable the snips hotword detection with the command:
+To limit the activation of the installed assistant to pushing the button you have to stop and disable the snips hotword detection with the command:
 ```
 sudo systemctl stop snips-hotword.service
 sudo systemctl disable snips-hotword.service
 ```
 **Caution:** This command will deactivate the activation of the snips dialog via the hotword (e.g. hey snips) for the whole system. To reactivate it use the commands: **sudo systemctl enable snips-hotword.service** and **sudo systemctl start snips-hotword.service**
+
+### Test your assistant with push button
+
+After doing that you should test the system by activating the dialog by pushing the button on the ReSpeaker hat. The dialog should start and you should be able to reboot your system via speech command, saying:
+```
+reboot
+```
+After confirming the execution the system should reboot.
