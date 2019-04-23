@@ -55,7 +55,7 @@ help
 ## Adaption of the underlying system
 The following changes have to be made directly on the raspberry pi.
 
-**increase dialog timeout**
+###increase dialog timeout
 
 Because the respond text of the help command is a little bit longish you have to increase the timeout for the session to 25 seconds.
 You have to add a line to the file *'/etc/snips.toml'* for the category '[snips-dialogue]' using the sudo command with your favorite editor:
@@ -65,7 +65,7 @@ session_timeout = 25
 
 ```
 
-**add skills user to sudoers**
+###add skills user to sudoers
 
 You have to configure the system to allow the _\_snips_skills_ user to execute the bootcontrol commands.
 First open the sudoers file via the command **visudo** and add the following lines and save and exit the editor:
@@ -76,25 +76,39 @@ _snips-skills  ALL=(ALL) NOPASSWD: SHUTDOWN
 
 ```  
 
-**deactivate hotword detection**
+### Test your assistant
 
-To limit the activation of the bootcontrol app to the pushing of the button you have to disable the snips hotword detection with the command:
+After doing that you should test the system by activating the dialog saying your hotword (e.g. hey snips) to see if you can reboot you system via speech command, saying:
+```
+hey snips
+reboot
+```
+After confirming the execution the system should reboot.
+You may consult the log if there are any errors:
+```
+ journalctl -u snips-skill-server
+```
+
+###add user '_snips_skills to group 'gpio'
+
+To use any gipo ports, so the button on the ReSpeaker head, you habe to add the skill-user to group 'gpio'
+```
+sudo usermod -a -G gpio _snips-skills
+```
+**Caution:** May be you have to reboot the system to get the new permissions run.
+
+###deactivate hotword detection
+
+To limit the activation of the installed assistant to the pushing of the button you have to disable the snips hotword detection with the command:
 ```
 sudo systemctl disable snips-hotword.service
 ```
 **Caution:** This command will deactivate the activation of the snips dialog via the hotword (e.g. hey snips) for the whole system. To reactivate it use the command: **sudo systemctl enable snips-hotword.service**
 
-snips.toml
+###add user '_snips_skills to group 'gpio'
 
-user/groups
-
-visudo
-
-GPIO (BCM) PIN 17
-snips.toml => 30 Sekunden.
-
-## Setup
-
-## GPIO access
-
-Please read the app description.
+To use any gipo ports, so the button on the ReSpeaker head, you habe to add the skill-user to group 'gpio'
+```
+sudo usermod -a -G gpio _snips-skills
+```
+**Caution:** May be you have to reboot the system to get the new permissions run.
