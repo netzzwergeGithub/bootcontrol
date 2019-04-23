@@ -97,18 +97,10 @@ sudo usermod -a -G gpio _snips-skills
 ```
 **Caution:** May be you have to reboot the system to get the new permissions run.
 
-###deactivate hotword detection
+### deactivate hotword detection
 
 To limit the activation of the installed assistant to the pushing of the button you have to disable the snips hotword detection with the command:
 ```
 sudo systemctl disable snips-hotword.service
 ```
 **Caution:** This command will deactivate the activation of the snips dialog via the hotword (e.g. hey snips) for the whole system. To reactivate it use the command: **sudo systemctl enable snips-hotword.service**
-
-### add user '_snips_skills to group 'gpio'
-
-To use any gipo ports, so the button on the ReSpeaker head, you habe to add the skill-user to group 'gpio'
-```
-sudo usermod -a -G gpio _snips-skills
-```
-**Caution:** May be you have to reboot the system to get the new permissions run.
