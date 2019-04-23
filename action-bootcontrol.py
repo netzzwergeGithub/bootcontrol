@@ -131,9 +131,6 @@ def bootcontrol_intent_callback(hermes, intentMessage):
 
 
 def onPinHigh(channel ):
-    '''
-      callback function called on rising edge
-    '''
     if channel == RESPEAKER_BUTTON:
         with Hermes(mqtt_options=mqtt_opts) as h:
             h.publish_start_session_action(None,
@@ -143,9 +140,11 @@ def onPinHigh(channel ):
 
 if __name__ == "__main__":
     try:
-        # register for a pin event
+        # set gpio and register for a pin event
+        # has to be done before connection via hermes
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(RESPEAKER_BUTTON, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+        # act on event
         GPIO.add_event_detect(RESPEAKER_BUTTON, GPIO.RISING, callback = onPinHigh, bouncetime = 200)
         # Register on intents and state changes
         mqtt_opts = MqttOptions()

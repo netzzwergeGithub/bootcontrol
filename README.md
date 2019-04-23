@@ -103,8 +103,9 @@ sudo usermod -a -G gpio _snips-skills
 
 ### deactivate hotword detection
 
-To limit the activation of the installed assistant to the pushing of the button you have to disable the snips hotword detection with the command:
+To limit the activation of the installed assistant to the pushing of the button you have to stop and disable the snips hotword detection with the command:
 ```
+sudo systemctl stop snips-hotword.service
 sudo systemctl disable snips-hotword.service
 ```
-**Caution:** This command will deactivate the activation of the snips dialog via the hotword (e.g. hey snips) for the whole system. To reactivate it use the command: **sudo systemctl enable snips-hotword.service**
+**Caution:** This command will deactivate the activation of the snips dialog via the hotword (e.g. hey snips) for the whole system. To reactivate it use the commands: **sudo systemctl enable snips-hotword.service** and **sudo systemctl start snips-hotword.service**
